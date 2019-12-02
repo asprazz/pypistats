@@ -14,33 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Ubuntu cache
-        uses: actions/cache@v1
-        if: startsWith(matrix.os, 'ubuntu')
-        with:
-          path: ~/.cache/pip
-          key:
-            ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/setup.py')
-            }}
-          restore-keys: |
-            ${{ matrix.os }}-${{ matrix.python-version }}-
+      - name: Set pip cache
+        id: pip-cache
+        run: |
+          python -c 'from sys import platform; print("::set-output name=dir::" + "~/.cache/pip" if platform == "linux" else "~/Library/Caches/pip" if platform == "darwin" else "~\AppData\Local\pip\Cache")'
 
-      - name: macOS cache
+      - name: Cache
         uses: actions/cache@v1
-        if: startsWith(matrix.os, 'macOS')
         with:
-          path: ~/Library/Caches/pip
-          key:
-            ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/setup.py')
-            }}
-          restore-keys: |
-            ${{ matrix.os }}-${{ matrix.python-version }}-
-
-      - name: Windows cache
-        uses: actions/cache@v1
-        if: startsWith(matrix.os, 'windows')
-        with:
-          path: ~\AppData\Local\pip\Cache
+          path: ${{ steps.pip-cache.outputs.dir }}
           key:
             ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/setup.py')
             }}
